@@ -1,5 +1,7 @@
 # k3d Quick Start Guide
 
+> ⚠️ **DEMO PURPOSES ONLY** - For testing and learning. Not for production use.
+
 This guide will help you test the entire monitoring stack locally using k3d (Kubernetes in Docker).
 
 ## Prerequisites

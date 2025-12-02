@@ -1,5 +1,7 @@
 # Deployment Guide
 
+> ⚠️ **DEMO PURPOSES ONLY** - This is a demonstration environment, not intended for production use. No support or warranty is provided.
+
 Complete guide for deploying the Kubernetes monitoring demo environment.
 
 ## Table of Contents

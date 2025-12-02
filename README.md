@@ -1,5 +1,7 @@
 # Kubernetes Monitoring Demo Environment
 
+> ⚠️ **DEMO PURPOSES ONLY** - This project is provided as-is for demonstration and educational purposes only. It is not intended for production use. No support or warranty is provided.
+
 A complete Kubernetes monitoring stack with Prometheus, Grafana, and 11 pre-configured dashboards. Includes full observability stack with service mesh, GitOps, certificate management, and secrets management. All metrics are sent to New Relic for long-term storage and analysis.
 
 ## Features
@@ -7,9 +9,9 @@ A complete Kubernetes monitoring stack with Prometheus, Grafana, and 11 pre-conf
 ✅ **Prometheus** - Metrics collection with New Relic remote write
 ✅ **Grafana** - 11 pre-configured dashboards for instant visibility
 ✅ **Complete Observability** - Node metrics, Kubernetes state, service mesh, GitOps
-✅ **Production-Ready** - Helm-based deployment with customizable values
+✅ **Helm-Based** - Standard Helm charts with customizable values
 ✅ **Local Testing** - Optimized k3d configuration for laptop development
-✅ **Cloud-Ready** - Tested on GKE, EKS, and AKS
+✅ **Multi-Cloud Compatible** - Works on GKE, EKS, and AKS
 
 ## Architecture
 
@@ -214,12 +216,20 @@ k3d cluster delete monitoring-demo
     └── troubleshooting.md
 ```
 
-## Support
+## Support & Disclaimer
 
-- 📖 **Documentation**: See [docs/](docs/) folder
-- 🐛 **Issues**: Check [Troubleshooting Guide](docs/troubleshooting.md)
-- 💬 **Questions**: Open an issue with your question
+⚠️ **This is a demo/educational project only**
+
+- ❌ **No support provided** - This project is provided as-is
+- ❌ **Not for production use** - Demo purposes only
+- ❌ **No warranty** - Use at your own risk
+- 📖 **Documentation**: See [docs/](docs/) folder for self-service help
+- 🐛 **Issues**: Check [Troubleshooting Guide](docs/troubleshooting.md) for common problems
 
 ## License
 
-This demo environment is provided as-is for educational and testing purposes.
+This project is provided **AS-IS** for **demonstration and educational purposes only**.
+
+**NOT INTENDED FOR PRODUCTION USE.**
+
+No warranty, support, or guarantees are provided. Use at your own risk.
