@@ -72,12 +72,22 @@ This will set up port forwarding:
 - **Grafana**: http://localhost:3000 (admin / admin)
 - **Prometheus**: http://localhost:9090
 
-### 4. View Pre-installed Dashboard
+### 4. View Pre-installed Dashboards
 
 1. Open Grafana at http://localhost:3000
 2. Log in with admin / admin
 3. Go to **Dashboards** → **Browse**
-4. Open the **Node Exporter Full** dashboard (automatically provisioned)
+4. Browse the automatically provisioned dashboards:
+   - **Node Exporter Full** - Comprehensive node metrics
+   - **ArgoCD** - GitOps deployment monitoring
+   - **Istio Performance** - Service mesh performance
+   - **Istio Mesh** - Service mesh topology
+   - **Istio Control Plane** - Istio control plane metrics
+   - **Cert Manager** - Certificate management monitoring
+   - **Kubernetes Nodes** - Node-level Kubernetes metrics
+   - **K8s Storage Volumes** - Persistent volume monitoring
+   - **K8s Dashboard** - General Kubernetes cluster overview
+   - **Kube State Metrics v2** - Cluster state metrics
 
 ## File Structure
 
@@ -129,7 +139,17 @@ Prometheus is configured to remote write metrics to New Relic using:
 
 - **Default credentials**: admin / admin (change after first login)
 - **Datasource**: Prometheus at `http://prometheus-server.monitoring.svc.cluster.local:9090`
-- **Dashboards**: Node Exporter Full (ID: 1860) automatically downloaded via init container
+- **Dashboards**: 10 pre-configured dashboards automatically downloaded via init container
+  - Node Exporter Full (1860)
+  - ArgoCD (14584)
+  - Istio Performance (11829)
+  - Istio Mesh (7639)
+  - Istio Control Plane (7645)
+  - Cert Manager (11001)
+  - Kubernetes Nodes (8171)
+  - K8s Storage Volumes (11454)
+  - K8s Dashboard (15661)
+  - Kube State Metrics v2 (13332)
 - **Port**: 3000
 
 ## Troubleshooting
@@ -217,14 +237,14 @@ write_relabel_configs:
 
 ### Adding Additional Grafana Dashboards
 
-The Node Exporter Full dashboard (ID: 1860) is automatically downloaded via an init container. To add more dashboards:
+10 dashboards are automatically downloaded via an init container. To add more dashboards:
 
-1. Modify the init container in `manifests/grafana/deployment.yaml` to download additional dashboards
-2. Add curl commands to fetch from Grafana.com API (e.g., `https://grafana.com/api/dashboards/{ID}/revisions/latest/download`)
-3. Process the JSON to replace datasource references
-4. Apply the changes with `kubectl apply`
+1. Modify the `DASHBOARDS` list in the init container in `manifests/grafana/deployment.yaml`
+2. Add entries in the format: `DASHBOARD_ID:filename.json`
+3. Apply the changes with `kubectl apply -f manifests/grafana/deployment.yaml`
+4. Restart the Grafana pod: `kubectl delete pod -n monitoring -l app=grafana`
 
-Popular additional dashboards:
+Example additional dashboards:
 - **11074**: Node Exporter for Prometheus (alternative view)
 - **13659**: Blackbox Exporter
 - **7249**: Kubernetes Cluster Monitoring

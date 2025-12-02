@@ -20,6 +20,76 @@ spec:
         runAsUser: 472
         runAsNonRoot: true
 
+      initContainers:
+        - name: download-dashboards
+          image: alpine:latest
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              apk add --no-cache wget ca-certificates
+              
+              # Define dashboards to download
+              # Format: "ID:filename"
+              DASHBOARDS="
+              1860:node-exporter-full.json
+              14584:argocd.json
+              11829:istio-performance.json
+              7639:istio-mesh.json
+              7645:istio-control-plane.json
+              11001:cert-manager.json
+              8171:kubernetes-nodes.json
+              11454:k8s-storage-volumes.json
+              15661:k8s-dashboard.json
+              13332:kube-state-metrics-v2.json
+              "
+              
+              echo "Downloading Grafana dashboards..."
+              TOTAL=0
+              SUCCESS=0
+              
+              for dashboard in $DASHBOARDS; do
+                if [ -z "$dashboard" ]; then
+                  continue
+                fi
+                
+                ID=$(echo $dashboard | cut -d: -f1)
+                FILENAME=$(echo $dashboard | cut -d: -f2)
+                
+                echo "Downloading dashboard $ID -> $FILENAME..."
+                if wget -O /tmp/dashboards/$FILENAME --no-check-certificate \
+                  https://grafana.com/api/dashboards/$ID/revisions/latest/download 2>&1; then
+                  SIZE=$(wc -c < /tmp/dashboards/$FILENAME)
+                  echo "  ✓ Success: ${SIZE} bytes"
+                  SUCCESS=$((SUCCESS + 1))
+                else
+                  echo "  ✗ Failed to download dashboard $ID"
+                fi
+                TOTAL=$((TOTAL + 1))
+              done
+              
+              # Change ownership to grafana user (472)
+              chown -R 472:472 /tmp/dashboards/
+              
+              echo ""
+              echo "Dashboard download summary:"
+              echo "  Total: $TOTAL"
+              echo "  Success: $SUCCESS"
+              echo "  Failed: $((TOTAL - SUCCESS))"
+              ls -lh /tmp/dashboards/
+              
+              if [ $SUCCESS -eq 0 ]; then
+                echo "ERROR: No dashboards downloaded successfully"
+                exit 1
+              fi
+          volumeMounts:
+            - name: dashboard-storage
+              mountPath: /tmp/dashboards
+
       containers:
         - name: grafana
           image: grafana/grafana:latest
@@ -41,6 +111,8 @@ spec:
               mountPath: /etc/grafana/provisioning/datasources
             - name: dashboards-volume
               mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboard-storage
+              mountPath: /var/lib/grafana/dashboards
             - name: storage-volume
               mountPath: /var/lib/grafana
 
@@ -75,5 +147,7 @@ spec:
         - name: dashboards-volume
           configMap:
             name: grafana-dashboards
+        - name: dashboard-storage
+          emptyDir: {}
         - name: storage-volume
           emptyDir: {}
