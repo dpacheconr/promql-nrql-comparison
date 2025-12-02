@@ -19,6 +19,19 @@ Prometheus (with remote write)
 - New Relic account with API access key
 - `curl` or `wget` for port forwarding helper (optional)
 
+### Setting up GKE Cluster
+
+```bash
+# Create GKE cluster
+gcloud container clusters create promql-nrql-demo \
+  --zone us-central1-a \
+  --num-nodes 3 \
+  --machine-type n1-standard-2
+
+# Get credentials
+gcloud container clusters get-credentials promql-nrql-demo --zone us-central1-a
+```
+
 ### Optional: Local Testing with k3d
 
 ```bash
@@ -62,19 +75,37 @@ This script will:
 
 ### 3. Access Services
 
-In a separate terminal, run:
+#### For GKE/Cloud Deployments (LoadBalancer)
+
+Services are exposed via LoadBalancer with external IPs:
+
+```bash
+# Get the external IPs (may take 2-3 minutes to provision)
+kubectl get svc -n monitoring
+
+# Watch for IP assignment
+kubectl get svc grafana -n monitoring -w
+```
+
+Once the EXTERNAL-IP is assigned, access:
+- **Grafana**: http://\<GRAFANA_EXTERNAL_IP\>:3000 (admin / admin)
+- **Prometheus**: http://\<PROMETHEUS_EXTERNAL_IP\>:9090
+
+#### For Local/Development (Port Forwarding)
+
+For local k3d clusters, use port forwarding:
 
 ```bash
 ./port-forward.sh
 ```
 
-This will set up port forwarding:
+Access via:
 - **Grafana**: http://localhost:3000 (admin / admin)
 - **Prometheus**: http://localhost:9090
 
 ### 4. View Pre-installed Dashboards
 
-1. Open Grafana at http://localhost:3000
+1. Open Grafana (via external IP or localhost)
 2. Log in with admin / admin
 3. Go to **Dashboards** → **Browse**
 4. Browse the automatically provisioned dashboards:
@@ -137,7 +168,8 @@ Prometheus is configured to remote write metrics to New Relic using:
 
 ### Grafana
 
-- **Default credentials**: admin / admin (change after first login)
+- **Default credentials**: admin / admin (⚠️ **CHANGE IMMEDIATELY** for public deployments)
+- **Service Type**: LoadBalancer (publicly accessible on GKE)
 - **Datasource**: Prometheus at `http://prometheus-server.monitoring.svc.cluster.local:9090`
 - **Dashboards**: 10 pre-configured dashboards automatically downloaded via init container
   - Node Exporter Full (1860)
@@ -151,6 +183,40 @@ Prometheus is configured to remote write metrics to New Relic using:
   - K8s Dashboard (15661)
   - Kube State Metrics v2 (13332)
 - **Port**: 3000
+
+## Security Considerations
+
+⚠️ **Important for Public Deployments:**
+
+This demo uses default credentials and LoadBalancer services for easy access. For production use:
+
+1. **Change Grafana Admin Password Immediately:**
+   ```bash
+   kubectl exec -n monitoring deployment/grafana -- grafana-cli admin reset-admin-password <new-password>
+   ```
+
+2. **Enable HTTPS/TLS:**
+   - Use Ingress with TLS certificates (cert-manager)
+   - Configure SSL termination at the load balancer level
+
+3. **Restrict Access:**
+   - Configure firewall rules to limit IP ranges
+   - Use GKE network policies
+   - Consider using private clusters with VPN/bastion host
+
+4. **Alternative: Use ClusterIP + Ingress:**
+   - Change service type from `LoadBalancer` to `ClusterIP`
+   - Deploy an Ingress controller (nginx, traefik)
+   - Configure Ingress resources with authentication
+
+Example firewall rule for GKE:
+```bash
+# Allow access only from your IP
+gcloud compute firewall-rules create grafana-access \
+  --allow tcp:3000 \
+  --source-ranges YOUR_IP/32 \
+  --target-tags gke-cluster-node
+```
 
 ## Troubleshooting
 

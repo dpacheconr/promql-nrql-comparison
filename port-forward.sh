@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Port forwarding script for local/development environments
+# 
+# NOTE: For GKE/cloud deployments, services are exposed via LoadBalancer.
+# This script is only needed for local clusters (k3d, minikube, etc.)
+# where LoadBalancer IPs are not available.
+#
+# For LoadBalancer access, run: kubectl get svc -n monitoring
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -41,6 +49,29 @@ check_prerequisites() {
 # Check if services are ready
 check_services() {
     log_info "Checking if services are ready..."
+
+    # Check if services have LoadBalancer external IPs
+    GRAFANA_EXTERNAL_IP=$(kubectl get svc grafana -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+    PROM_EXTERNAL_IP=$(kubectl get svc prometheus-server -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+
+    if [ ! -z "$GRAFANA_EXTERNAL_IP" ] || [ ! -z "$PROM_EXTERNAL_IP" ]; then
+        echo ""
+        echo -e "${YELLOW}╔════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${YELLOW}║${NC}              Services Exposed via LoadBalancer            ${YELLOW}║${NC}"
+        echo -e "${YELLOW}╚════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${YELLOW}Your services are accessible via external IPs:${NC}"
+        [ ! -z "$GRAFANA_EXTERNAL_IP" ] && echo -e "  • Grafana:     http://${GRAFANA_EXTERNAL_IP}:3000"
+        [ ! -z "$PROM_EXTERNAL_IP" ] && echo -e "  • Prometheus:  http://${PROM_EXTERNAL_IP}:9090"
+        echo ""
+        echo -e "${YELLOW}Port forwarding is not necessary for cloud deployments.${NC}"
+        echo -e "${YELLOW}Do you want to continue anyway? (yes/no)${NC}"
+        read -r response
+        if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+            log_info "Exiting..."
+            exit 0
+        fi
+    fi
 
     # Check Prometheus
     if ! kubectl get deployment prometheus-server -n ${NAMESPACE} &> /dev/null; then
