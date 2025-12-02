@@ -1,0 +1,95 @@
+# Sample ArgoCD Application - deploys a simple guestbook app
+# Note: This requires ArgoCD to be installed first
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook-demo
+  namespace: monitoring  # ArgoCD applications are typically in the ArgoCD namespace
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  # Source repository
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: guestbook
+
+  # Destination cluster and namespace
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo-apps
+
+  # Sync policy
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+---
+# Another sample app - helm-guestbook
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: helm-guestbook-demo
+  namespace: monitoring
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: helm-guestbook
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo-apps
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
+---
+# AppProject for demo applications
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: demo-project
+  namespace: monitoring
+spec:
+  description: Demo project for testing ArgoCD
+
+  # Allow deploying to demo-apps namespace
+  destinations:
+    - namespace: demo-apps
+      server: https://kubernetes.default.svc
+
+  # Allow all sources
+  sourceRepos:
+    - '*'
+
+  # Cluster resource whitelist
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+
+  # Namespace resource whitelist (allow all in demo-apps)
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

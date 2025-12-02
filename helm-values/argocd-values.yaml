@@ -1,0 +1,119 @@
+# Helm values for ArgoCD
+# Chart: argo/argo-cd
+
+# Global configuration
+global:
+  domain: argocd.local
+
+# Server configuration
+server:
+  replicas: 1
+
+  service:
+    type: ClusterIP
+
+  metrics:
+    enabled: true
+    service:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8083"
+        prometheus.io/path: "/metrics"
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Repository Server configuration
+repoServer:
+  replicas: 1
+
+  metrics:
+    enabled: true
+    service:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8084"
+        prometheus.io/path: "/metrics"
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Application Controller configuration
+controller:
+  replicas: 1
+
+  metrics:
+    enabled: true
+    service:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8082"
+        prometheus.io/path: "/metrics"
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# Dex (SSO) configuration
+dex:
+  enabled: true
+
+  resources:
+    limits:
+      cpu: 50m
+      memory: 64Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+# Redis configuration
+redis:
+  enabled: true
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+
+# Application Set Controller (optional, for GitOps at scale)
+applicationSet:
+  enabled: true
+  replicaCount: 1
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# Notifications controller (optional)
+notifications:
+  enabled: false
+
+# Configs - initial repositories (can be empty for demo)
+configs:
+  repositories: {}
+
+  # Initial admin password (change after first login)
+  # Default: generated randomly
+  secret:
+    createSecret: true

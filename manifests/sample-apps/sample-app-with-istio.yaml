@@ -1,0 +1,146 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app
+  namespace: demo-apps
+  labels:
+    app: demo-app
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: demo-app
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  namespace: demo-apps
+  labels:
+    app: demo-app
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: demo-app
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "15020"
+        prometheus.io/path: "/stats/prometheus"
+    spec:
+      containers:
+        - name: demo-app
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=Hello from demo-app v1"
+            - "-listen=:8080"
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app-v2
+  namespace: demo-apps
+  labels:
+    app: demo-app-v2
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: demo-app-v2
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app-v2
+  namespace: demo-apps
+  labels:
+    app: demo-app-v2
+    version: v2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-app-v2
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: demo-app-v2
+        version: v2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "15020"
+        prometheus.io/path: "/stats/prometheus"
+    spec:
+      containers:
+        - name: demo-app
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=Hello from demo-app v2"
+            - "-listen=:8080"
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+---
+# Traffic generator to create metrics
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: traffic-generator
+  namespace: demo-apps
+spec:
+  schedule: "*/1 * * * *"  # Every minute
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: curl
+              image: curlimages/curl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  for i in $(seq 1 10); do
+                    curl -s http://demo-app.demo-apps.svc.cluster.local
+                    curl -s http://demo-app-v2.demo-apps.svc.cluster.local
+                    sleep 1
+                  done

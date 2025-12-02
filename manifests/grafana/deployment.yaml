@@ -42,6 +42,7 @@ spec:
               7639:istio-mesh.json
               7645:istio-control-plane.json
               11001:cert-manager.json
+              14043:external-secrets.json
               8171:kubernetes-nodes.json
               11454:k8s-storage-volumes.json
               15661:k8s-dashboard.json

@@ -27,9 +27,9 @@ data:
           min_backoff: 30ms
           max_backoff: 100ms
         write_relabel_configs:
-          # Keep only node exporter and system metrics
+          # Keep metrics from all components
           - source_labels: [__name__]
-            regex: 'node_.*|up|prometheus_.*'
+            regex: 'node_.*|up|prometheus_.*|kube_.*|kubelet_.*|container_.*|certmanager_.*|externalsecret_.*|argocd_.*|istio_.*|envoy_.*|pilot_.*|galley_.*'
             action: keep
 
     scrape_configs:
@@ -54,3 +54,111 @@ data:
           # Add node label
           - source_labels: [__meta_kubernetes_node_name]
             target_label: node
+
+      # Kube State Metrics
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['kube-state-metrics.monitoring.svc.cluster.local:8080']
+
+      # Kubelet metrics (cAdvisor)
+      - job_name: 'kubelet'
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node
+
+      # Kubelet cAdvisor metrics for container/volume stats
+      - job_name: 'kubelet-cadvisor'
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node
+
+      # Cert-Manager
+      - job_name: 'cert-manager'
+        static_configs:
+          - targets: ['cert-manager.monitoring.svc.cluster.local:9402']
+
+      # External Secrets Operator
+      - job_name: 'external-secrets'
+        static_configs:
+          - targets: ['external-secrets-webhook.monitoring.svc.cluster.local:8080']
+
+      # ArgoCD - Application Controller
+      - job_name: 'argocd-application-controller'
+        static_configs:
+          - targets: ['argocd-application-controller-metrics.monitoring.svc.cluster.local:8082']
+
+      # ArgoCD - API Server
+      - job_name: 'argocd-server'
+        static_configs:
+          - targets: ['argocd-server-metrics.monitoring.svc.cluster.local:8083']
+
+      # ArgoCD - Repo Server
+      - job_name: 'argocd-repo-server'
+        static_configs:
+          - targets: ['argocd-repo-server-metrics.monitoring.svc.cluster.local:8084']
+
+      # Istio Control Plane (istiod)
+      - job_name: 'istiod'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - istio-system
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: istiod;http-monitoring
+          - source_labels: [__meta_kubernetes_service_label_app]
+            target_label: app
+
+      # Istio Envoy Proxies (sidecars and gateways)
+      - job_name: 'envoy-stats'
+        metrics_path: /stats/prometheus
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          # Only scrape pods with Istio sidecar
+          - source_labels: [__meta_kubernetes_pod_container_port_name]
+            action: keep
+            regex: '.*-envoy-prom'
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:15090
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod_name

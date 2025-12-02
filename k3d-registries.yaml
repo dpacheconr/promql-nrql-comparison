@@ -1,0 +1,27 @@
+mirrors:
+  "docker.io":
+    endpoint:
+      - https://registry-1.docker.io
+  "quay.io":
+    endpoint:
+      - https://quay.io
+  "gcr.io":
+    endpoint:
+      - https://gcr.io
+  "ghcr.io":
+    endpoint:
+      - https://ghcr.io
+
+configs:
+  "quay.io":
+    tls:
+      insecure_skip_verify: true
+  "docker.io":
+    tls:
+      insecure_skip_verify: true
+  "gcr.io":
+    tls:
+      insecure_skip_verify: true
+  "ghcr.io":
+    tls:
+      insecure_skip_verify: true

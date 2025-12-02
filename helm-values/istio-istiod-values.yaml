@@ -1,0 +1,64 @@
+# Helm values for Istio Control Plane (istiod)
+# Chart: istio/istiod
+
+global:
+  # Istio control plane namespace
+  istioNamespace: istio-system
+
+# Pilot/Istiod configuration
+pilot:
+  # Enable prometheus metrics
+  enabled: true
+
+  # Resource configuration
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Autoscaling
+  autoscaleEnabled: false
+  replicaCount: 1
+
+  # Tracing and monitoring
+  traceSampling: 1.0
+
+# Telemetry configuration
+telemetry:
+  enabled: true
+  v2:
+    enabled: true
+    prometheus:
+      enabled: true
+
+# Mesh configuration
+meshConfig:
+  # Enable access logging for demo purposes
+  accessLogFile: /dev/stdout
+  accessLogEncoding: JSON
+
+  # Default prometheus scraping
+  defaultConfig:
+    # Sidecar proxy metrics
+    proxyMetadata: {}
+
+    # Prometheus port on sidecars
+    statusPort: 15020
+
+  # Enable prometheus metrics
+  enablePrometheusMerge: true
+
+# Sidecar injector configuration
+sidecarInjectorWebhook:
+  enableNamespacesByDefault: false
+  rewriteAppHTTPProbe: true
+
+# Service annotations for Prometheus scraping
+service:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "15014"
+    prometheus.io/path: "/metrics"

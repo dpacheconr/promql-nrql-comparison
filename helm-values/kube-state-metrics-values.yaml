@@ -1,0 +1,78 @@
+# Helm values for kube-state-metrics
+# Chart: prometheus-community/kube-state-metrics
+
+# Service configuration
+service:
+  port: 8080
+  type: ClusterIP
+
+# Prometheus integration
+prometheus:
+  monitor:
+    enabled: false  # We're using standard Prometheus scraping
+
+# Resource limits
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+# Pod annotations for Prometheus scraping
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
+# Security context
+securityContext:
+  enabled: true
+  runAsUser: 65534
+  runAsNonRoot: true
+  fsGroup: 65534
+
+# Extra labels
+extraLabels:
+  app: kube-state-metrics
+
+# Collectors - enable all standard collectors
+collectors:
+  - certificatesigningrequests
+  - configmaps
+  - cronjobs
+  - daemonsets
+  - deployments
+  - endpoints
+  - horizontalpodautoscalers
+  - ingresses
+  - jobs
+  - leases
+  - limitranges
+  - mutatingwebhookconfigurations
+  - namespaces
+  - networkpolicies
+  - nodes
+  - persistentvolumeclaims
+  - persistentvolumes
+  - poddisruptionbudgets
+  - pods
+  - replicasets
+  - replicationcontrollers
+  - resourcequotas
+  - secrets
+  - services
+  - statefulsets
+  - storageclasses
+  - validatingwebhookconfigurations
+  - volumeattachments
+
+# Node selector (optional)
+nodeSelector: {}
+
+# Tolerations (optional)
+tolerations: []
+
+# Affinity (optional)
+affinity: {}

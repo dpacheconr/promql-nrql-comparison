@@ -1,0 +1,70 @@
+# Helm values for cert-manager
+# Chart: jetstack/cert-manager
+
+# Install CRDs
+installCRDs: true
+
+# Global configuration
+global:
+  leaderElection:
+    namespace: "monitoring"
+
+# Prometheus metrics
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: false  # Using standard Prometheus scraping
+
+# Controller configuration
+controller:
+  replicaCount: 1
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+  # Prometheus metrics configuration
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9402"
+    prometheus.io/path: "/metrics"
+
+# Webhook configuration
+webhook:
+  replicaCount: 1
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# CA Injector configuration
+cainjector:
+  replicaCount: 1
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# Startup API check
+startupapicheck:
+  enabled: true
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi

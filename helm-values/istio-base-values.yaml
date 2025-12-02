@@ -1,0 +1,16 @@
+# Helm values for Istio Base (CRDs and cluster-wide resources)
+# Chart: istio/base
+
+# Default values for base.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Base chart is mostly about installing CRDs
+# Minimal configuration needed
+
+global:
+  # Istio control plane namespace
+  istioNamespace: istio-system
+
+# Validate webhook configuration
+validationWebhookConfigurationName: istio-validator-istio-system
