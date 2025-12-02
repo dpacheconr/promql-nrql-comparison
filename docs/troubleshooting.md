@@ -422,7 +422,7 @@ If issues persist:
 2. **Check documentation:**
    - [Deployment Guide](deployment-guide.md)
    - [Configuration Guide](configuration-guide.md)
-   - [K3D Quick Start](../K3D-QUICKSTART.md)
+   - [K3D Quick Start](../docs/k3d-quickstart.md)
 
 3. **Open an issue** with:
    - Component versions

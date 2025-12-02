@@ -140,7 +140,7 @@ gcloud compute firewall-rules create grafana-access \
 
 ## Local k3d Deployment
 
-For local testing, see the complete guide: **[K3D-QUICKSTART.md](../K3D-QUICKSTART.md)**
+For local testing, see the complete guide: **[docs/k3d-quickstart.md](../docs/k3d-quickstart.md)**
 
 Quick summary:
 

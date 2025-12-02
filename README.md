@@ -82,10 +82,10 @@ kubectl create secret generic newrelic-license-key \
 
 ## Documentation
 
-📘 **[Deployment Guide](docs/deployment-guide.md)** - Complete deployment instructions for cloud and local
+📘 **[Deployment Guide](docs/deployment-guide.md)** - Complete deployment instructions
+🚀 **[K3D Quick Start](docs/k3d-quickstart.md)** - Local k3d testing guide
 🔧 **[Configuration Guide](docs/configuration-guide.md)** - Customize components and metrics
 🐛 **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
-🚀 **[K3D Quick Start](K3D-QUICKSTART.md)** - Local testing with k3d
 
 ## What Gets Deployed
 
@@ -118,7 +118,7 @@ Perfect for testing locally on your laptop:
 ./scripts/port-forward.sh
 ```
 
-See **[K3D Quick Start Guide](K3D-QUICKSTART.md)** for details.
+See **[K3D Quick Start Guide](docs/k3d-quickstart.md)** for details.
 
 ## Cloud Deployment
 
@@ -194,13 +194,14 @@ k3d cluster delete monitoring-demo
 ## Project Structure
 
 ```
-├── deploy.sh                 # Deploy base stack
-├── helm-deploy.sh            # Deploy Helm components (cloud)
-├── helm-deploy-k3d.sh        # Deploy Helm components (k3d)
-├── k3d-setup.sh              # Create k3d cluster
-├── cleanup.sh                # Remove all resources
-├── port-forward.sh           # Port forwarding helper
-├── manifests/                # Kubernetes manifests
+├── scripts/                  # Deployment and utility scripts
+│   ├── deploy.sh            # Deploy base stack
+│   ├── helm-deploy.sh       # Deploy Helm components (cloud)
+│   ├── helm-deploy-k3d.sh   # Deploy Helm components (k3d)
+│   ├── k3d-setup.sh         # Create k3d cluster
+│   ├── cleanup.sh           # Remove all resources
+│   └── port-forward.sh      # Port forwarding helper
+├── manifests/               # Kubernetes manifests
 │   ├── prometheus/          # Prometheus configuration
 │   ├── grafana/             # Grafana with 11 dashboards
 │   ├── node-exporter/       # Node Exporter DaemonSet
@@ -208,6 +209,7 @@ k3d cluster delete monitoring-demo
 ├── helm-values/             # Helm chart values
 └── docs/                    # Documentation
     ├── deployment-guide.md
+    ├── k3d-quickstart.md
     ├── configuration-guide.md
     └── troubleshooting.md
 ```
