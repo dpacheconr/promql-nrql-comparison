@@ -53,7 +53,7 @@ Replace `YOUR_NEW_RELIC_LICENSE_KEY` with your actual license key from [New Reli
 ### Step 3: Deploy Base Stack
 
 ```bash
-./deploy.sh
+./scripts/deploy.sh
 ```
 
 This deploys:
@@ -82,7 +82,7 @@ This deploys (with k3d-optimized resource limits):
 ### Step 5: Access Services
 
 ```bash
-./port-forward.sh
+./scripts/port-forward.sh
 ```
 
 Then open in your browser:
@@ -279,8 +279,6 @@ For production deployment, use `helm-deploy.sh` instead of `helm-deploy-k3d.sh`.
    ```bash
    kubectl rollout restart deployment <name> -n monitoring
    ```
-
-5. **Save resources** - Don't run all dashboards at once in Grafana
 
 ## Next Steps
 
