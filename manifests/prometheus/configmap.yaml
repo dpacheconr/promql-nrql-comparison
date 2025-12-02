@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+  labels:
+    app: prometheus-server
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: "demo-cluster"
+        environment: "demo"
+
+    # Send metrics to New Relic via remote write
+    remote_write:
+      - url: "https://metric-api.newrelic.com/prometheus/v1/write?prometheus_server=demo-cluster"
+        bearer_token_file: /etc/secrets/newrelic/license-key
+        queue_config:
+          capacity: 10000
+          max_samples_per_send: 1000
+          batch_send_deadline: 5s
+          max_shards: 200
+          min_shards: 1
+          min_backoff: 30ms
+          max_backoff: 100ms
+        write_relabel_configs:
+          # Keep only node exporter and system metrics
+          - source_labels: [__name__]
+            regex: 'node_.*|up|prometheus_.*'
+            action: keep
+
+    scrape_configs:
+      # Prometheus itself
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # Node Exporter via Kubernetes service discovery
+      - job_name: 'node-exporter'
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          # Use the node's hostname as the instance label
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: instance
+          # Node exporter runs on port 9100
+          - source_labels: [__address__]
+            regex: '([^:]+)(?::\d+)?'
+            replacement: '${1}:9100'
+            target_label: __address__
+          # Add node label
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node

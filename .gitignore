@@ -1,0 +1,38 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Query results and temporary outputs
+query-results/
+*.json
+*.error
+
+# Comparison reports
+comparison-reports/
+*.txt
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Secrets and credentials
+secrets/*.yaml
+!secrets/*.example
+!secrets/README.md
+
+# Kubernetes resources with sensitive data
+*.secret.yaml
+*.credentials.yaml
