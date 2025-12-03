@@ -76,7 +76,7 @@ kubectl create secret generic newrelic-license-key \
 4. **Istio Mesh** - Service mesh topology
 5. **Istio Control Plane** - Control plane metrics
 6. **Cert Manager** - Certificate management
-7. **External Secrets** - Secrets synchronization
+7. **External Secrets** - Secrets synchronization monitoring
 8. **Kubernetes Nodes** - Node-level Kubernetes metrics
 9. **K8s Storage Volumes** - Persistent volume monitoring
 10. **K8s Dashboard** - General cluster overview

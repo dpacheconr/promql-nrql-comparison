@@ -42,7 +42,6 @@ spec:
               7639:istio-mesh.json
               7645:istio-control-plane.json
               11001:cert-manager.json
-              14043:external-secrets.json
               8171:kubernetes-nodes.json
               11454:k8s-storage-volumes.json
               15661:k8s-dashboard.json
@@ -52,15 +51,15 @@ spec:
               echo "Downloading Grafana dashboards..."
               TOTAL=0
               SUCCESS=0
-              
+
               for dashboard in $DASHBOARDS; do
                 if [ -z "$dashboard" ]; then
                   continue
                 fi
-                
+
                 ID=$(echo $dashboard | cut -d: -f1)
                 FILENAME=$(echo $dashboard | cut -d: -f2)
-                
+
                 echo "Downloading dashboard $ID -> $FILENAME..."
                 if wget -O /tmp/dashboards/$FILENAME --no-check-certificate \
                   https://grafana.com/api/dashboards/$ID/revisions/latest/download 2>&1; then
@@ -72,6 +71,18 @@ spec:
                 fi
                 TOTAL=$((TOTAL + 1))
               done
+
+              # Download External Secrets dashboard from GitHub (not available on Grafana.com)
+              echo "Downloading External Secrets dashboard from GitHub..."
+              if wget -O /tmp/dashboards/external-secrets.json --no-check-certificate \
+                https://raw.githubusercontent.com/external-secrets/external-secrets/main/docs/snippets/dashboard.json 2>&1; then
+                SIZE=$(wc -c < /tmp/dashboards/external-secrets.json)
+                echo "  ✓ Success: ${SIZE} bytes"
+                SUCCESS=$((SUCCESS + 1))
+              else
+                echo "  ✗ Failed to download External Secrets dashboard"
+              fi
+              TOTAL=$((TOTAL + 1))
               
               # Change ownership to grafana user (472)
               chown -R 472:472 /tmp/dashboards/
